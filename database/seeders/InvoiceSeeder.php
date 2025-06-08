@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Item;
 use App\Models\Team;
 use App\Models\Invoice;
 use App\Models\Customer;
@@ -28,7 +29,7 @@ class InvoiceSeeder extends Seeder
         $customerIds = Customer::pluck('id')->toArray();
         $team = Team::first();
         for ($i = 0; $i < 10; $i++) { // Create 10 fake estimates
-            Invoice::create([
+            $invoice = Invoice::create([
                 'customer_id' => $faker->randomElement($customerIds),
                 'date' => $faker->date(),
                 'due_date' => $faker->date(),
@@ -38,6 +39,23 @@ class InvoiceSeeder extends Seeder
                 'notes' => $faker->sentence(), // Random sentence as notes
                 'team_id' => $team->id,
             ]);
+
+
+            $item = Item::inRandomOrder()->limit($faker->numberBetween(1, 5))->get();
+
+            foreach($item as $items){
+                $invoice->items()->attach($items->id, [
+                    'quantity' => $faker->numberBetween(1, 10), // Random quantity between 1 - 10
+                  
+                ]);
+            };
+
+            
+
+         
+            
+
+
         }
     }
 }

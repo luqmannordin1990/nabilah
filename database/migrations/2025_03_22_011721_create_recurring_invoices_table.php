@@ -19,13 +19,13 @@ return new class extends Migration
 
         Schema::create('recurring_invoices', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade'); // Customer reference
+            $table->foreignId('customer_id')->nullable(); // Customer reference
             $table->date('start_date'); // Date when recurrence starts
             $table->date('next_invoice_date')->nullable(); // End date (if applicable)
             $table->string('invoice_number')->nullable(); // Unique recurring invoice number
-            $table->enum('frequency', ['daily','weekly', 'monthly', 'yearly'])->default('weekly'); // Recurrence frequency
+            $table->string('frequency')->nullable(); // Recurrence frequency
             $table->integer('limit_by')->nullable(); // Number of invoices to generate (null = unlimited)
-            $table->enum('status', ['active', 'on_hold', 'completed'])->default('active'); // Invoice status
+            $table->string('status')->nullable(); // Invoice status
             $table->text('notes')->nullable(); // Additional notes
             $table->foreignId('team_id')->nullable();
             $table->softDeletes();

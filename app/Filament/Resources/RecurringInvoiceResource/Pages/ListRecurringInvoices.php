@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\RecurringInvoiceResource\Pages;
 
-use App\Filament\Resources\RecurringInvoiceResource;
 use Filament\Actions;
+use App\Filament\Resources\ItemResource;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\RecurringInvoiceResource;
 
 class ListRecurringInvoices extends ListRecords
 {
@@ -14,6 +15,8 @@ class ListRecurringInvoices extends ListRecords
     {
         return [
             Actions\CreateAction::make(),
+            Actions\Action::make('Items')
+             ->url(ItemResource::getUrl('index')),
         ];
     }
 }

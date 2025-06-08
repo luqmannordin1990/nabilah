@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use Filament\Forms;
 use App\Models\Item;
 use Filament\Tables;
+use App\Models\Invoice;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Forms\Form;
@@ -41,7 +42,8 @@ class RecurringInvoiceResource extends Resource
                         Forms\Components\Select::make('customer_id')
                             ->relationship(
                                 name: 'customer',
-                                titleAttribute: 'name')
+                                titleAttribute: 'name'
+                            )
                             ->required()
                             ->searchable()
                             ->preload(),
@@ -56,7 +58,7 @@ class RecurringInvoiceResource extends Resource
                                 $set('next_invoice_date', $date);
                             }),
                         Forms\Components\DatePicker::make('next_invoice_date')
-                            ->default(fn($get)=>$get('start_date'))
+                            ->default(fn($get) => $get('start_date'))
                             ->required()
                             ->readonly()
                             ->dehydrated(true),
@@ -78,9 +80,9 @@ class RecurringInvoiceResource extends Resource
                             ->default('monthly')
                             ->live()
                             ->afterStateUpdated(function (Get $get, Set $set, ?string $old, ?string $state, $operation) {
-                                if($operation == 'create'){
+                                if ($operation == 'create') {
                                     $date = $get('start_date');
-                                }else{
+                                } else {
                                     $date = RecurringInvoice::next_invoice_date($state, $get('start_date'));
                                 }
                                 $set('next_invoice_date', $date);
@@ -88,7 +90,7 @@ class RecurringInvoiceResource extends Resource
 
                         Forms\Components\Select::make('status')
                             ->required()
-                            ->options(RecurringInvoice::status())
+                            ->options(Invoice::liststatus())
                             ->default('active'),
                         Forms\Components\Textarea::make('notes')
                             ->columnSpanFull(),
@@ -158,7 +160,7 @@ class RecurringInvoiceResource extends Resource
             ]);
     }
 
-    static function  calculate_total($set, $get)    
+    static function  calculate_total($set, $get)
     {
         $price = Item::find($get('id'))?->price ?? 0;
         $amount = (float)$price * (float)$get('pivot.quantity');
@@ -183,8 +185,20 @@ class RecurringInvoiceResource extends Resource
                 Tables\Columns\TextColumn::make('invoice_number')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('frequency'),
-             
+
                 Tables\Columns\TextColumn::make('limit_by')
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('total')
+                    ->state(function ($record) {
+                        $data = $record->items;
+                        $total = 0;
+                        foreach ($data as $k => $v) {
+                            $total = $total + ($v->pivot->quantity * $v->price);
+                        }
+
+                        return $total;
+                    })
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status'),
